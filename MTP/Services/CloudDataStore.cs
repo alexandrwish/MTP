@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using MTP.Services;
 using Newtonsoft.Json;
 using Plugin.Connectivity;
 
@@ -15,7 +16,7 @@ namespace MTP
 
         public CloudDataStore()
         {
-            client = new HttpClient {BaseAddress = new Uri($"{App.BackendUrl}/")};
+            client = CloudDataStoreExtension.Extend();
             items = new List<Item>();
         }
 

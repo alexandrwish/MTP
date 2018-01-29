@@ -115,6 +115,7 @@
     <ImageAsset Include="Assets.xcassets\Contents.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Services\CloudDataStoreExtension.cs" />
     <Compile Include="ViewControllers\DetailViewControllers\BrowseItemDetailViewController.cs" />
     <Compile Include="ViewControllers\DetailViewControllers\BrowseItemDetailViewController.designer.cs">
       <DependentUpon>BrowseItemDetailViewController.cs</DependentUpon>

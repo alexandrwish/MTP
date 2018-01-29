@@ -1,8 +1,10 @@
 ﻿using System;
-
+using System.Runtime.InteropServices;
 using Android.App;
+using Android.Content;
 using Android.OS;
 using Android.Runtime;
+using Android.Preferences;
 
 using Plugin.CurrentActivity;
 
@@ -12,6 +14,10 @@ namespace MTP.Droid
     [Application]
     public class MainApplication : Application, Application.IActivityLifecycleCallbacks
     {
+        private static string CERT_NAME = "certificate.name";
+        
+        public static MainApplication Current { get; set; }
+
         public MainApplication(IntPtr handle, JniHandleOwnership transer)
         : base(handle, transer)
         {
@@ -22,8 +28,9 @@ namespace MTP.Droid
             base.OnCreate();
             RegisterActivityLifecycleCallbacks(this);
             App.Initialize();
+            Current = this;
         }
-
+        
         public override void OnTerminate()
         {
             base.OnTerminate();
@@ -63,6 +70,15 @@ namespace MTP.Droid
         public void OnActivityStopped(Activity activity)
         {
 
+        }
+
+        public String getCertificateAlias()
+        {
+            return PreferenceManager.GetDefaultSharedPreferences(this).GetString(CERT_NAME, null);
+        }
+
+        public void SaveCertificateAlias(string alias) {
+            PreferenceManager.GetDefaultSharedPreferences(this).Edit().PutString(CERT_NAME, alias).Apply();    
         }
     }
 }
