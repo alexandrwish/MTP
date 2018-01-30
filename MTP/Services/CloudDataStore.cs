@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Text;
+using System.IO;
+using System.Net;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using System.Threading.Tasks;
 using MTP.Services;
 using Newtonsoft.Json;
@@ -11,35 +13,56 @@ namespace MTP
 {
     public class CloudDataStore : IDataStore<Item>
     {
-        protected HttpClient client;
-        protected IEnumerable<Item> items;
+        public X509Certificate Certificate { private get; set; }
+        private IEnumerable<Item> _items;
 
         public CloudDataStore()
         {
-            client = CloudDataStoreExtension.Extend();
-            items = new List<Item>();
+            CloudDataStoreExtension.Extend(this);
+            _items = new List<Item>();
+        }
+
+        public async Task<bool> LoginAsync(LoginRecord record)
+        {
+            return true;
         }
 
         public async Task<IEnumerable<Item>> GetItemsAsync(bool forceRefresh = false)
         {
-            if (forceRefresh && CrossConnectivity.Current.IsConnected)
+            var t = await Task<Task<IEnumerable<Item>>>.Factory.StartNew(async () =>
             {
-                var json = await client.GetStringAsync($"api/item");
-                items = await Task.Run(() => JsonConvert.DeserializeObject<IEnumerable<Item>>(json));
-            }
+                SpinWait.SpinUntil(() => Certificate != null);
+                if (!forceRefresh || !CrossConnectivity.Current.IsConnected) return _items;
+                string result;
+                var request = (HttpWebRequest) WebRequest.Create(App.BackendUrl + "api/item");
+                request.ClientCertificates.Add(Certificate);
+                var httpResponse = await request.GetResponseAsync();
+                using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+                {
+                    result = streamReader.ReadToEnd();
+                }
 
-            return items;
+                _items = await Task.Run(() => JsonConvert.DeserializeObject<IEnumerable<Item>>(result));
+
+                return _items;
+            });
+            t.Wait();
+            return t.Result;
         }
 
         public async Task<Item> GetItemAsync(string id)
         {
-            if (id != null && CrossConnectivity.Current.IsConnected)
+            if (id == null || !CrossConnectivity.Current.IsConnected) return null;
+            string result;
+            var request = (HttpWebRequest) WebRequest.Create(App.BackendUrl + "api/item/" + id);
+            request.ClientCertificates.Add(Certificate);
+            var httpResponse = await request.GetResponseAsync();
+            using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
             {
-                var json = await client.GetStringAsync($"api/item/{id}");
-                return await Task.Run(() => JsonConvert.DeserializeObject<Item>(json));
+                result = streamReader.ReadToEnd();
             }
 
-            return null;
+            return await Task.Run(() => JsonConvert.DeserializeObject<Item>(result));
         }
 
         public async Task<bool> AddItemAsync(Item item)
@@ -47,36 +70,65 @@ namespace MTP
             if (item == null || !CrossConnectivity.Current.IsConnected)
                 return false;
 
-            var serializedItem = JsonConvert.SerializeObject(item);
+            var request = (HttpWebRequest) WebRequest.Create(App.BackendUrl + "api/item");
+            request.ClientCertificates.Add(Certificate);
+            request.Method = "POST";
+            request.ContentType = "application/json";
+            var jsonString = JsonConvert.SerializeObject(item);
+            using (var streamWriter = new StreamWriter(request.GetRequestStream()))
+            {
+                streamWriter.Write(jsonString);
+                streamWriter.Flush();
+                streamWriter.Close();
 
-            var response = await client.PostAsync($"api/item",
-                new StringContent(serializedItem, Encoding.UTF8, "application/json"));
-
-            return response.IsSuccessStatusCode;
+                var httpResponse = await request.GetResponseAsync();
+                using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+                {
+                    var result = streamReader.ReadToEnd();
+                    return await Task.Run(() => JsonConvert.DeserializeObject<bool>(result));
+                }
+            }
         }
 
         public async Task<bool> UpdateItemAsync(Item item)
         {
-            if (item == null || item.Id == null || !CrossConnectivity.Current.IsConnected)
+            if (item?.Id == null || !CrossConnectivity.Current.IsConnected)
                 return false;
 
-            var serializedItem = JsonConvert.SerializeObject(item);
-            var buffer = Encoding.UTF8.GetBytes(serializedItem);
-            var byteContent = new ByteArrayContent(buffer);
+            var request = (HttpWebRequest) WebRequest.Create(App.BackendUrl + "api/item/" + item.Id);
+            request.ClientCertificates.Add(Certificate);
+            request.Method = "PUT";
+            request.ContentType = "application/json";
+            var jsonString = JsonConvert.SerializeObject(item);
+            using (var streamWriter = new StreamWriter(request.GetRequestStream()))
+            {
+                streamWriter.Write(jsonString);
+                streamWriter.Flush();
+                streamWriter.Close();
 
-            var response = await client.PutAsync(new Uri($"api/item/{item.Id}"), byteContent);
-
-            return response.IsSuccessStatusCode;
+                var httpResponse = await request.GetResponseAsync();
+                using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+                {
+                    var result = streamReader.ReadToEnd();
+                    return await Task.Run(() => JsonConvert.DeserializeObject<bool>(result));
+                }
+            }
         }
 
         public async Task<bool> DeleteItemAsync(string id)
         {
-            if (string.IsNullOrEmpty(id) && !CrossConnectivity.Current.IsConnected)
-                return false;
+            if (id == null || !CrossConnectivity.Current.IsConnected) return false;
+            string result;
+            var request = (HttpWebRequest) WebRequest.Create(App.BackendUrl + "api/item/" + id);
+            request.ClientCertificates.Add(Certificate);
+            request.Method = "DELETE";
+            var httpResponse = await request.GetResponseAsync();
+            using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+            {
+                result = streamReader.ReadToEnd();
+            }
 
-            var response = await client.DeleteAsync($"api/item/{id}");
-
-            return response.IsSuccessStatusCode;
+            return await Task.Run(() => JsonConvert.DeserializeObject<bool>(result));
         }
     }
 }

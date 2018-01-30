@@ -15,10 +15,13 @@ namespace MTP.Droid
     public class MainApplication : Application, Application.IActivityLifecycleCallbacks
     {
         private static string CERT_NAME = "certificate.name";
-        
+        public static string USER_LOGIN = "user.login";
+
         public static MainApplication Current { get; set; }
 
-        public MainApplication(IntPtr handle, JniHandleOwnership transer)
+        public ISharedPreferences preference { get; set; }
+
+    public MainApplication(IntPtr handle, JniHandleOwnership transer)
         : base(handle, transer)
         {
         }
@@ -29,6 +32,7 @@ namespace MTP.Droid
             RegisterActivityLifecycleCallbacks(this);
             App.Initialize();
             Current = this;
+            preference = PreferenceManager.GetDefaultSharedPreferences(this);
         }
         
         public override void OnTerminate()
@@ -74,7 +78,7 @@ namespace MTP.Droid
 
         public String getCertificateAlias()
         {
-            return PreferenceManager.GetDefaultSharedPreferences(this).GetString(CERT_NAME, null);
+            return preference.GetString(CERT_NAME, null);
         }
 
         public void SaveCertificateAlias(string alias) {

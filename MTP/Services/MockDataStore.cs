@@ -91,5 +91,10 @@ namespace MTP
         {
             return await Task.FromResult(items);
         }
+
+        public async Task<bool> LoginAsync(LoginRecord record)
+        {
+            return false;
+        }
     }
 }

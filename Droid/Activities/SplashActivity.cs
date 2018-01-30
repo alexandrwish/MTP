@@ -11,8 +11,9 @@ namespace MTP.Droid
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
-
-            var newIntent = new Intent(this, typeof(MainActivity));
+            var newIntent = MainApplication.Current.preference.GetBoolean(MainApplication.USER_LOGIN, true)
+                ? new Intent(this, typeof(MainActivity))
+                : new Intent(this, typeof(LoginActivity));
             newIntent.AddFlags(ActivityFlags.ClearTop);
             newIntent.AddFlags(ActivityFlags.SingleTop);
 

@@ -33,6 +33,7 @@ namespace MTP.Droid
         {
             var item = new Item
             {
+                Id = System.Guid.NewGuid().ToString(),
                 Text = title.Text,
                 Description = description.Text
             };

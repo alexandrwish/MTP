@@ -19,4 +19,11 @@
 	<string name="hint_description">Description</string>
 	<string name="app_description">This app is written in C# and native APIs using the Xamarin Platform. It shares code with its iOS, Android, &amp; Windows versions.</string>
 	<string name="sign_in_text">Sign in with your account to save and sync items</string>
+
+	<string name="app_desc"/>
+	<string name="user_login">Login</string>
+	<string name="user_login_btn">Login</string>
+	<string name="user_password">Password</string>
+	<string name="user_login_title">Account login</string>
+	<string name="user_create_ref">No account yet? Create one</string>
 </resources>

@@ -4,9 +4,8 @@ namespace MTP.Services
 {
     public static class CloudDataStoreExtension
     {
-        public static HttpClient Extend()
+        public static void Extend(CloudDataStore store)
         {
-            return null;
         }
     }
 }

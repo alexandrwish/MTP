@@ -4,8 +4,8 @@ namespace MTP
 {
     public class App
     {
-        public static bool UseMockDataStore = false;
-        public static string BackendUrl = "http://megatestproject.herokuapp.com/rest/";
+        private const bool UseMockDataStore = false;
+        public const string BackendUrl = "https://megatestproject.herokuapp.com/";
 
         public static void Initialize()
         {
