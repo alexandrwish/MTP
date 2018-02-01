@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Android.Security;
 using Java.Security;
 using Java.Security.Cert;
@@ -9,12 +10,12 @@ namespace MTP.Services
 {
     public static class CloudDataStoreExtension
     {
-        public static void Extend(CloudDataStore store)
+        public static void Extend(CloudDataStore store, Action action)
         {
             var alias = MainApplication.Current.getCertificateAlias();
             if (alias == null)
             {
-                GetCertificate(new HttpCallback(store));
+                GetCertificate(new HttpCallback(store, action));
             }
             else
             {
@@ -23,6 +24,7 @@ namespace MTP.Services
                 var certificate = ks.GetCertificate(alias);
                 store.Certificate =
                     new System.Security.Cryptography.X509Certificates.X509Certificate(certificate.GetEncoded());
+                action.Invoke();
             }
         }
 
@@ -35,16 +37,19 @@ namespace MTP.Services
         private class HttpCallback
         {
             private readonly CloudDataStore _store;
+            private readonly Action _action;
 
-            public HttpCallback(CloudDataStore store)
+            public HttpCallback(CloudDataStore store, Action action)
             {
                 _store = store;
+                _action = action;
             }
 
             public void Run(Certificate certificate)
             {
                 var crt = new System.Security.Cryptography.X509Certificates.X509Certificate(certificate.GetEncoded());
                 _store.Certificate = crt;
+                _action.Invoke();
             }
         }
 
@@ -69,6 +74,16 @@ namespace MTP.Services
                     return crt;
                 }).Result[0]);
             }
+        }
+
+        public static void Revert(CloudDataStore store)
+        {
+            var alias = MainApplication.Current.getCertificateAlias();
+            var ks = KeyStore.GetInstance("AndroidKeyStore");
+            ks.Load(null);
+            ks.DeleteEntry(alias);
+            store.Certificate = null;
+            MainApplication.Current.RemoveCertificateAlias();
         }
     }
 }

@@ -40,8 +40,23 @@ namespace MTP.Droid
 
             Toolbar.MenuItemClick += (sender, e) =>
             {
-                var intent = new Intent(this, typeof(AddItemActivity));
-                StartActivity(intent);
+                switch (e.Item.ItemId)
+                {
+                    case Resource.Id.menu_edit:
+                    {
+                        var intent = new Intent(this, typeof(AddItemActivity));
+                        StartActivity(intent);
+                        break;
+                    }
+                    case Resource.Id.menu_logout:
+                    {
+                        MainApplication.Current.preference.Edit().PutBoolean(MainApplication.USER_LOGIN, false).Apply();
+                        var intent = new Intent(this, typeof(SplashActivity));
+                        StartActivity(intent);
+                        Finish();
+                        break;
+                    }
+                }
             };
 
             SupportActionBar.SetDisplayHomeAsUpEnabled(false);

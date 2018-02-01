@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
+using MTP.ViewModel;
 
 namespace MTP
 {
@@ -21,13 +21,10 @@ namespace MTP
             IsBusy = true;
             try
             {
-                var success = await DataStore.LoginAsync(login);
-                if (success)
-                {
-                }
-                else
-                {
-                }
+                LoginViewModelExtension.ExtendLogin(await DataStore.LoginAsync(login), () =>
+                    {
+                        DataStore.RemoveCertificate();
+                    });
             }
             catch (Exception e)
             {

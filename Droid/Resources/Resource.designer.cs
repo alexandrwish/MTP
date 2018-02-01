@@ -2574,6 +2574,9 @@ namespace MTP.Droid
 			// aapt resource value: 0x7f0800b2
 			public const int menu_edit = 2131230898;
 			
+			// aapt resource value: 0x7f0800b3
+			public const int menu_logout = 2131230899;
+			
 			// aapt resource value: 0x7f080022
 			public const int middle = 2131230754;
 			

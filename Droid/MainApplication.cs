@@ -16,6 +16,7 @@ namespace MTP.Droid
     {
         private static string CERT_NAME = "certificate.name";
         public static string USER_LOGIN = "user.login";
+        public static string LOGIN_COUNT = "login.count";
 
         public static MainApplication Current { get; set; }
 
@@ -82,7 +83,11 @@ namespace MTP.Droid
         }
 
         public void SaveCertificateAlias(string alias) {
-            PreferenceManager.GetDefaultSharedPreferences(this).Edit().PutString(CERT_NAME, alias).Apply();    
+            preference.Edit().PutString(CERT_NAME, alias).Apply();    
+        }
+        
+        public void RemoveCertificateAlias() {
+            preference.Edit().PutString(CERT_NAME, null).Apply();    
         }
     }
 }

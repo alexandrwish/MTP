@@ -12,5 +12,7 @@ namespace MTP
         Task<IEnumerable<T>> GetItemsAsync(bool forceRefresh = false);
 
         Task<bool> LoginAsync(LoginRecord login);
+
+        void RemoveCertificate();
     }
 }
