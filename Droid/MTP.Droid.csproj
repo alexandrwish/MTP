@@ -137,11 +137,6 @@
     <AndroidResource Include="Resources\drawable\circle_background.xml" />
     <AndroidResource Include="Resources\drawable\heroplaceholder.png" />
     <AndroidResource Include="Resources\drawable\xamarin_logo.png" />
-    <AndroidResource Include="Resources\drawable-hdpi\ic_save.png" />
-    <AndroidResource Include="Resources\drawable-mdpi\ic_save.png" />
-    <AndroidResource Include="Resources\drawable-xhdpi\ic_save.png" />
-    <AndroidResource Include="Resources\drawable-xxhdpi\ic_save.png" />
-    <AndroidResource Include="Resources\drawable-xxxhdpi\ic_save.png" />
     <AndroidResource Include="Resources\layout\activity_add_item.axml" />
     <AndroidResource Include="Resources\layout\activity_item_details.axml" />
     <AndroidResource Include="Resources\layout\activity_login.axml" />
@@ -169,7 +164,9 @@
     <AndroidResource Include="Resources\values-v21\styles.xml" />
     <AndroidResource Include="Resources\drawable\user_profile_image_background.xml" />
     <AndroidResource Include="Resources\drawable-hdpi\ic_lock_black_24dp.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\ic_delete_black_24dp.png" />
     <AndroidResource Include="Resources\drawable-hdpi\ic_person_black_24dp.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\ic_save_black_24dp.png" />
     <AndroidResource Include="Resources\drawable-hdpi\icon.png" />
   </ItemGroup>
   <Import Project="..\MTP\MTP.projitems" Label="Shared" Condition="Exists('..\MTP\MTP.projitems')" />

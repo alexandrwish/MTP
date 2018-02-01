@@ -3,7 +3,6 @@ using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using Android.Views;
-using Android.Widget;
 using Android.Support.V4.App;
 using Android.Support.V4.View;
 using Android.Support.Design.Widget;
@@ -18,23 +17,23 @@ namespace MTP.Droid
     {
         protected override int LayoutResource => Resource.Layout.activity_main;
 
-        ViewPager pager;
-        TabsAdapter adapter;
+        private ViewPager _pager;
+        private TabsAdapter _adapter;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
 
-            adapter = new TabsAdapter(this, SupportFragmentManager);
-            pager = FindViewById<ViewPager>(Resource.Id.viewpager);
+            _adapter = new TabsAdapter(this, SupportFragmentManager);
+            _pager = FindViewById<ViewPager>(Resource.Id.viewpager);
             var tabs = FindViewById<TabLayout>(Resource.Id.tabs);
-            pager.Adapter = adapter;
-            tabs.SetupWithViewPager(pager);
-            pager.OffscreenPageLimit = 3;
+            _pager.Adapter = _adapter;
+            tabs.SetupWithViewPager(_pager);
+            _pager.OffscreenPageLimit = 3;
 
-            pager.PageSelected += (sender, args) =>
+            _pager.PageSelected += (sender, args) =>
             {
-                var fragment = adapter.InstantiateItem(pager, args.Position) as IFragmentVisible;
+                var fragment = _adapter.InstantiateItem(_pager, args.Position) as IFragmentVisible;
 
                 fragment?.BecameVisible();
             };
@@ -42,7 +41,6 @@ namespace MTP.Droid
             Toolbar.MenuItemClick += (sender, e) =>
             {
                 var intent = new Intent(this, typeof(AddItemActivity));
-                ;
                 StartActivity(intent);
             };
 
@@ -57,19 +55,19 @@ namespace MTP.Droid
         }
     }
 
-    class TabsAdapter : FragmentStatePagerAdapter
+    internal class TabsAdapter : FragmentStatePagerAdapter
     {
-        string[] titles;
+        private readonly string[] _titles;
 
-        public override int Count => titles.Length;
+        public override int Count => _titles.Length;
 
         public TabsAdapter(Context context, Android.Support.V4.App.FragmentManager fm) : base(fm)
         {
-            titles = context.Resources.GetTextArray(Resource.Array.sections);
+            _titles = context.Resources.GetTextArray(Resource.Array.sections);
         }
 
         public override Java.Lang.ICharSequence GetPageTitleFormatted(int position) =>
-            new Java.Lang.String(titles[position]);
+            new Java.Lang.String(_titles[position]);
 
         public override Android.Support.V4.App.Fragment GetItem(int position)
         {

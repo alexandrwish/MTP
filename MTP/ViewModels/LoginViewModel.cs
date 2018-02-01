@@ -6,7 +6,7 @@ namespace MTP
 {
     public class LoginViewModel : BaseViewModel
     {
-        public Command LoginCommand { get; set; }
+        public Command LoginCommand { get; }
 
         public LoginViewModel()
         {
@@ -24,11 +24,9 @@ namespace MTP
                 var success = await DataStore.LoginAsync(login);
                 if (success)
                 {
-                    
                 }
                 else
                 {
-                    
                 }
             }
             catch (Exception e)

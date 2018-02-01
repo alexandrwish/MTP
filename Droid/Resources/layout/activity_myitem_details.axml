@@ -33,6 +33,6 @@
 			</android.support.v7.widget.CardView>
 		</LinearLayout>
 	</android.support.v4.widget.NestedScrollView>
-	<android.support.design.widget.FloatingActionButton android:id="@+id/save_button" android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@drawable/ic_save" app:elevation="4dp" android:layout_gravity="bottom|right" android:layout_margin="@dimen/fab_margin" />
+	<android.support.design.widget.FloatingActionButton android:id="@+id/save_button" android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@drawable/ic_save_black_24dp" app:elevation="4dp" android:layout_gravity="bottom|right" android:layout_margin="@dimen/fab_margin" />
 	<ProgressBar android:layout_height="wrap_content" android:layout_width="wrap_content" android:layout_gravity="center" android:id="@+id/progressbar_loading" android:indeterminate="true" />
 </android.support.design.widget.CoordinatorLayout>

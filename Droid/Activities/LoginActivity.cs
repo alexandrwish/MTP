@@ -13,24 +13,24 @@ namespace MTP.Droid
     public class LoginActivity : BaseActivity
     {
         protected override int LayoutResource => Resource.Layout.activity_login;
-        private TextInputEditText Login { get; set; }
-        private TextInputEditText Password { get; set; }
-        private LoginViewModel ViewModel;
+        private TextInputEditText _login;
+        private TextInputEditText _password;
+        private LoginViewModel _viewModel;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
-            ViewModel = new LoginViewModel();
-            Login = FindViewById<TextInputEditText>(Resource.Id.input_login);
-            Password = FindViewById<TextInputEditText>(Resource.Id.input_password);
+            _viewModel = new LoginViewModel();
+            _login = FindViewById<TextInputEditText>(Resource.Id.input_login);
+            _password = FindViewById<TextInputEditText>(Resource.Id.input_password);
             FindViewById(Resource.Id.login_btn).Click += delegate
             {
                 var record = new LoginRecord
                 {
-                    Login = Login.Text,
-                    Password = Password.Text
+                    Login = _login.Text,
+                    Password = _password.Text
                 };
-                ViewModel.LoginCommand.Execute(record);
+                _viewModel.LoginCommand.Execute(record);
             };
             FindViewById(Resource.Id.link_signup).Click += delegate
             {

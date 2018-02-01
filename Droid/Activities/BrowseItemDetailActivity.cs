@@ -1,6 +1,7 @@
-﻿using Android.App;
-using Android.Content;
+﻿using System;
+using Android.App;
 using Android.OS;
+using Android.Support.Design.Widget;
 using Android.Widget;
 
 namespace MTP.Droid
@@ -9,12 +10,12 @@ namespace MTP.Droid
     [MetaData("android.support.PARENT_ACTIVITY", Value = ".MainActivity")]
     public class BrowseItemDetailActivity : BaseActivity
     {
-        /// <summary>
-        /// Specify the layout to inflace
-        /// </summary>
+        public const int RequestCode = 12;
+
         protected override int LayoutResource => Resource.Layout.activity_item_details;
 
-        ItemDetailViewModel viewModel;
+        private FloatingActionButton _deleteButton;
+        private ItemDetailViewModel _viewModel;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -23,21 +24,20 @@ namespace MTP.Droid
             var data = Intent.GetStringExtra("data");
 
             var item = Newtonsoft.Json.JsonConvert.DeserializeObject<Item>(data);
-            viewModel = new ItemDetailViewModel(item);
+            _viewModel = new ItemDetailViewModel(item);
+            _deleteButton = FindViewById<FloatingActionButton>(Resource.Id.delete_button);
 
             FindViewById<TextView>(Resource.Id.description).Text = item.Description;
 
             SupportActionBar.Title = item.Text;
+            _deleteButton.Click += DeleteButton_Click;
         }
 
-        protected override void OnStart()
+        private void DeleteButton_Click(object sender, EventArgs e)
         {
-            base.OnStart();
-        }
-
-        protected override void OnStop()
-        {
-            base.OnStop();
+            _viewModel.DeleteItemCommand.Execute(null);
+            BrowseFragment.ViewModel.LoadItemsCommand.Execute(null);
+            Finish();
         }
     }
 }

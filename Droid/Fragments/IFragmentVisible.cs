@@ -1,6 +1,6 @@
 ﻿namespace MTP.Droid
 {
-    interface IFragmentVisible
+    internal interface IFragmentVisible
     {
         void BecameVisible();
     }

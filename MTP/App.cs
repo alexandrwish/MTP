@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MTP
+﻿namespace MTP
 {
     public class App
     {

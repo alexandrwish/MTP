@@ -9,10 +9,11 @@ namespace MTP.Droid
     [Activity(Label = "AddItemActivity")]
     public class AddItemActivity : Activity
     {
-        FloatingActionButton saveButton;
-        EditText title, description;
+        private FloatingActionButton _saveButton;
+        private EditText _title, _description;
+        private Item _item;
 
-        public ItemsViewModel ViewModel { get; set; }
+        private ItemsViewModel ViewModel { get; set; }
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -22,22 +23,38 @@ namespace MTP.Droid
 
             // Create your application here
             SetContentView(Resource.Layout.activity_add_item);
-            saveButton = FindViewById<FloatingActionButton>(Resource.Id.save_button);
-            title = FindViewById<EditText>(Resource.Id.txtTitle);
-            description = FindViewById<EditText>(Resource.Id.txtDesc);
+            _saveButton = FindViewById<FloatingActionButton>(Resource.Id.save_button);
+            _title = FindViewById<EditText>(Resource.Id.txtTitle);
+            _description = FindViewById<EditText>(Resource.Id.txtDesc);
 
-            saveButton.Click += SaveButton_Click;
+            var data = Intent.GetStringExtra("data");
+            if (data == null)
+            {
+                _item = new Item();
+            }
+            else
+            {
+                _item = Newtonsoft.Json.JsonConvert.DeserializeObject<Item>(data);
+                _title.Text = _item.Text;
+                _description.Text = _item.Description;
+            }
+
+            _saveButton.Click += SaveButton_Click;
         }
 
-        void SaveButton_Click(object sender, EventArgs e)
+        private void SaveButton_Click(object sender, EventArgs e)
         {
-            var item = new Item
+            _item.Text = _title.Text;
+            _item.Description = _description.Text;
+            if (_item.Id == null)
             {
-                Id = System.Guid.NewGuid().ToString(),
-                Text = title.Text,
-                Description = description.Text
-            };
-            ViewModel.AddItemCommand.Execute(item);
+                _item.Id = Guid.NewGuid().ToString();
+                ViewModel.AddItemCommand.Execute(_item);
+            }
+            else
+            {
+                ViewModel.UpdateItemComand.Execute(_item);
+            }
 
             Finish();
         }

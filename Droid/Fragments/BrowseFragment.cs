@@ -11,38 +11,29 @@ namespace MTP.Droid
 {
     public class BrowseFragment : Android.Support.V4.App.Fragment, IFragmentVisible
     {
-        public static BrowseFragment NewInstance() =>
-            new BrowseFragment {Arguments = new Bundle()};
+        public static BrowseFragment NewInstance() => new BrowseFragment {Arguments = new Bundle()};
 
-        BrowseItemsAdapter adapter;
-        SwipeRefreshLayout refresher;
+        private BrowseItemsAdapter _adapter;
+        private SwipeRefreshLayout _refresher;
 
-        ProgressBar progress;
-        public static ItemsViewModel ViewModel { get; set; }
-
-        public override void OnCreate(Bundle savedInstanceState)
-        {
-            base.OnCreate(savedInstanceState);
-
-            // Create your fragment here
-        }
+        private ProgressBar _progress;
+        public static ItemsViewModel ViewModel { get; private set; }
 
         public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
             ViewModel = new ItemsViewModel();
 
-            View view = inflater.Inflate(Resource.Layout.fragment_browse, container, false);
-            var recyclerView =
-                view.FindViewById<RecyclerView>(Resource.Id.recyclerView);
+            var view = inflater.Inflate(Resource.Layout.fragment_browse, container, false);
+            var recyclerView = view.FindViewById<RecyclerView>(Resource.Id.recyclerView);
 
             recyclerView.HasFixedSize = true;
-            recyclerView.SetAdapter(adapter = new BrowseItemsAdapter(Activity, ViewModel));
+            recyclerView.SetAdapter(_adapter = new BrowseItemsAdapter(Activity, ViewModel));
 
-            refresher = view.FindViewById<SwipeRefreshLayout>(Resource.Id.refresher);
-            refresher.SetColorSchemeColors(Resource.Color.accent);
+            _refresher = view.FindViewById<SwipeRefreshLayout>(Resource.Id.refresher);
+            _refresher.SetColorSchemeColors(Resource.Color.accent);
 
-            progress = view.FindViewById<ProgressBar>(Resource.Id.progressbar_loading);
-            progress.Visibility = ViewStates.Gone;
+            _progress = view.FindViewById<ProgressBar>(Resource.Id.progressbar_loading);
+            _progress.Visibility = ViewStates.Gone;
 
             return view;
         }
@@ -51,8 +42,9 @@ namespace MTP.Droid
         {
             base.OnStart();
 
-            refresher.Refresh += Refresher_Refresh;
-            adapter.ItemClick += Adapter_ItemClick;
+            _refresher.Refresh += Refresher_Refresh;
+            _adapter.ItemClick += Adapter_ItemClick;
+            _adapter.ItemLongClick += Adapter_ItemLongClick;
 
             if (ViewModel.Items.Count == 0)
                 ViewModel.LoadItemsCommand.Execute(null);
@@ -61,23 +53,32 @@ namespace MTP.Droid
         public override void OnStop()
         {
             base.OnStop();
-            refresher.Refresh -= Refresher_Refresh;
-            adapter.ItemClick -= Adapter_ItemClick;
+            _refresher.Refresh -= Refresher_Refresh;
+            _adapter.ItemClick -= Adapter_ItemClick;
         }
 
-        void Adapter_ItemClick(object sender, RecyclerClickEventArgs e)
+        private void Adapter_ItemClick(object sender, RecyclerClickEventArgs e)
         {
             var item = ViewModel.Items[e.Position];
             var intent = new Intent(Activity, typeof(BrowseItemDetailActivity));
 
             intent.PutExtra("data", Newtonsoft.Json.JsonConvert.SerializeObject(item));
-            Activity.StartActivity(intent);
+            StartActivity(intent);
+        }
+
+        private void Adapter_ItemLongClick(object sender, RecyclerClickEventArgs e)
+        {
+            var item = ViewModel.Items[e.Position];
+            var intent = new Intent(Activity, typeof(AddItemActivity));
+
+            intent.PutExtra("data", Newtonsoft.Json.JsonConvert.SerializeObject(item));
+            StartActivity(intent);
         }
 
         void Refresher_Refresh(object sender, EventArgs e)
         {
             ViewModel.LoadItemsCommand.Execute(null);
-            refresher.Refreshing = false;
+            _refresher.Refreshing = false;
         }
 
         public void BecameVisible()
@@ -85,29 +86,23 @@ namespace MTP.Droid
         }
     }
 
-    class BrowseItemsAdapter : BaseRecycleViewAdapter
+    internal class BrowseItemsAdapter : BaseRecycleViewAdapter
     {
-        ItemsViewModel viewModel;
-        Activity activity;
+        private readonly ItemsViewModel _viewModel;
 
         public BrowseItemsAdapter(Activity activity, ItemsViewModel viewModel)
         {
-            this.viewModel = viewModel;
-            this.activity = activity;
+            _viewModel = viewModel;
 
-            this.viewModel.Items.CollectionChanged += (sender, args) =>
-            {
-                this.activity.RunOnUiThread(NotifyDataSetChanged);
-            };
+            _viewModel.Items.CollectionChanged += (sender, args) => { activity.RunOnUiThread(NotifyDataSetChanged); };
         }
 
         // Create new views (invoked by the layout manager)
         public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
         {
             //Setup your layout here
-            View itemView = null;
-            var id = Resource.Layout.item_browse;
-            itemView = LayoutInflater.From(parent.Context).Inflate(id, parent, false);
+            const int id = Resource.Layout.item_browse;
+            var itemView = LayoutInflater.From(parent.Context).Inflate(id, parent, false);
 
             var vh = new MyViewHolder(itemView, OnClick, OnLongClick);
             return vh;
@@ -116,21 +111,21 @@ namespace MTP.Droid
         // Replace the contents of a view (invoked by the layout manager)
         public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
         {
-            var item = viewModel.Items[position];
+            var item = _viewModel.Items[position];
 
             // Replace the contents of the view with that element
-            var myHolder = holder as MyViewHolder;
+            if (!(holder is MyViewHolder myHolder)) return;
             myHolder.TextView.Text = item.Text;
             myHolder.DetailTextView.Text = item.Description;
         }
 
-        public override int ItemCount => viewModel.Items.Count;
+        public override int ItemCount => _viewModel.Items.Count;
     }
 
     public class MyViewHolder : RecyclerView.ViewHolder
     {
-        public TextView TextView { get; set; }
-        public TextView DetailTextView { get; set; }
+        public TextView TextView { get; }
+        public TextView DetailTextView { get; }
 
         public MyViewHolder(View itemView, Action<RecyclerClickEventArgs> clickListener,
             Action<RecyclerClickEventArgs> longClickListener) : base(itemView)

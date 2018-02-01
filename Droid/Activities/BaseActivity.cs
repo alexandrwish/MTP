@@ -11,21 +11,14 @@ namespace MTP.Droid
             base.OnCreate(savedInstanceState);
             SetContentView(LayoutResource);
             Toolbar = FindViewById<Toolbar>(Resource.Id.toolbar);
-            if (Toolbar != null)
-            {
-                SetSupportActionBar(Toolbar);
-                SupportActionBar.SetDisplayHomeAsUpEnabled(true);
-                SupportActionBar.SetHomeButtonEnabled(true);
-            }
+            if (Toolbar == null) return;
+            SetSupportActionBar(Toolbar);
+            SupportActionBar.SetDisplayHomeAsUpEnabled(true);
+            SupportActionBar.SetHomeButtonEnabled(true);
         }
 
-        public Toolbar Toolbar { get; set; }
+        protected Toolbar Toolbar { get; set; }
 
         protected virtual int LayoutResource { get; }
-
-        protected int ActionBarIcon
-        {
-            set { Toolbar?.SetNavigationIcon(value); }
-        }
     }
 }

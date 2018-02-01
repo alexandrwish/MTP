@@ -7,19 +7,21 @@ namespace MTP
 {
     public class ItemsViewModel : BaseViewModel
     {
-        public ObservableCollection<Item> Items { get; set; }
-        public Command LoadItemsCommand { get; set; }
-        public Command AddItemCommand { get; set; }
+        public Command AddItemCommand { get; }
+        public Command LoadItemsCommand { get; }
+        public Command UpdateItemComand { get; }
+        public ObservableCollection<Item> Items { get; }
 
         public ItemsViewModel()
         {
             Title = "Browse";
             Items = new ObservableCollection<Item>();
+            AddItemCommand = new Command<Item>(async item => await AddItem(item));
+            UpdateItemComand = new Command<Item>(async item => await UpdateItem(item));
             LoadItemsCommand = new Command(async () => await ExecuteLoadItemsCommand());
-            AddItemCommand = new Command<Item>(async (Item item) => await AddItem(item));
         }
 
-        async Task ExecuteLoadItemsCommand()
+        private async Task ExecuteLoadItemsCommand()
         {
             if (IsBusy)
                 return;
@@ -45,10 +47,28 @@ namespace MTP
             }
         }
 
-        async Task AddItem(Item item)
+        private async Task AddItem(Item item)
         {
             Items.Add(item);
             await DataStore.AddItemAsync(item);
+        }
+
+        private async Task UpdateItem(Item item)
+        {
+            Item tmp = null;
+            foreach (var i in Items)
+            {
+                if (i.Id != item.Id) continue;
+                tmp = i;
+                break;
+            }
+
+            if (tmp != null)
+            {
+                Items.Remove(tmp);
+                Items.Add(item);
+                await DataStore.UpdateItemAsync(item);
+            }
         }
     }
 }

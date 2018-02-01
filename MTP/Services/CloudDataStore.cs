@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
@@ -35,7 +34,11 @@ namespace MTP
                 if (!forceRefresh || !CrossConnectivity.Current.IsConnected) return _items;
                 string result;
                 var request = (HttpWebRequest) WebRequest.Create(App.BackendUrl + "api/item");
-                request.ClientCertificates.Add(Certificate);
+                if (Certificate != null)
+                {
+                    request.ClientCertificates.Add(Certificate);
+                }
+
                 var httpResponse = await request.GetResponseAsync();
                 using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
                 {
@@ -55,7 +58,11 @@ namespace MTP
             if (id == null || !CrossConnectivity.Current.IsConnected) return null;
             string result;
             var request = (HttpWebRequest) WebRequest.Create(App.BackendUrl + "api/item/" + id);
-            request.ClientCertificates.Add(Certificate);
+            if (Certificate != null)
+            {
+                request.ClientCertificates.Add(Certificate);
+            }
+
             var httpResponse = await request.GetResponseAsync();
             using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
             {
@@ -71,7 +78,11 @@ namespace MTP
                 return false;
 
             var request = (HttpWebRequest) WebRequest.Create(App.BackendUrl + "api/item");
-            request.ClientCertificates.Add(Certificate);
+            if (Certificate != null)
+            {
+                request.ClientCertificates.Add(Certificate);
+            }
+
             request.Method = "POST";
             request.ContentType = "application/json";
             var jsonString = JsonConvert.SerializeObject(item);
@@ -96,7 +107,11 @@ namespace MTP
                 return false;
 
             var request = (HttpWebRequest) WebRequest.Create(App.BackendUrl + "api/item/" + item.Id);
-            request.ClientCertificates.Add(Certificate);
+            if (Certificate != null)
+            {
+                request.ClientCertificates.Add(Certificate);
+            }
+
             request.Method = "PUT";
             request.ContentType = "application/json";
             var jsonString = JsonConvert.SerializeObject(item);
@@ -120,7 +135,11 @@ namespace MTP
             if (id == null || !CrossConnectivity.Current.IsConnected) return false;
             string result;
             var request = (HttpWebRequest) WebRequest.Create(App.BackendUrl + "api/item/" + id);
-            request.ClientCertificates.Add(Certificate);
+            if (Certificate != null)
+            {
+                request.ClientCertificates.Add(Certificate);
+            }
+
             request.Method = "DELETE";
             var httpResponse = await request.GetResponseAsync();
             using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
