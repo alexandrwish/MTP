@@ -47,8 +47,13 @@ namespace MTP.Services
 
             public void Run(Certificate certificate)
             {
-                var crt = new System.Security.Cryptography.X509Certificates.X509Certificate(certificate.GetEncoded());
-                _store.Certificate = crt;
+                if (certificate != null)
+                {
+                    var crt =
+                        new System.Security.Cryptography.X509Certificates.X509Certificate(certificate.GetEncoded());
+                    _store.Certificate = crt;
+                }
+
                 _action.Invoke();
             }
         }
@@ -66,11 +71,16 @@ namespace MTP.Services
             {
                 _callback.Run(Task.Factory.StartNew(() =>
                 {
+                    if (alias == null) return null;
                     var crt = KeyChain.GetCertificateChain(MainApplication.Current, alias);
                     var ks = KeyStore.GetInstance("AndroidKeyStore");
                     ks.Load(null);
                     ks.SetCertificateEntry(alias, crt[0]);
-                    MainApplication.Current.SaveCertificateAlias(alias);
+                    MainApplication.Current.preference.Edit()
+                        .PutString(MainApplication.CERT_NAME, alias)
+                        .PutInt(MainApplication.LOGIN_COUNT, 0)
+                        .Apply();
+
                     return crt;
                 }).Result[0]);
             }
@@ -79,11 +89,15 @@ namespace MTP.Services
         public static void Revert(CloudDataStore store)
         {
             var alias = MainApplication.Current.getCertificateAlias();
+            if (alias == null) return;
             var ks = KeyStore.GetInstance("AndroidKeyStore");
             ks.Load(null);
             ks.DeleteEntry(alias);
             store.Certificate = null;
-            MainApplication.Current.RemoveCertificateAlias();
+            MainApplication.Current.preference.Edit()
+                .PutString(MainApplication.CERT_NAME, null)
+                .PutInt(MainApplication.LOGIN_COUNT, 0)
+                .Apply();
         }
     }
 }

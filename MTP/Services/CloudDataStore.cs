@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using MTP.Services;
@@ -8,28 +10,29 @@ namespace MTP
 {
     public class CloudDataStore : IDataStore<Item>
     {
-        private bool _isBusy;
+        private List<HttpPromise> Queuly { get; }
         private readonly IEnumerable<Item> _items;
-        private readonly List<HttpPromise> _queuly;
         public X509Certificate Certificate { get; set; }
 
         public CloudDataStore()
         {
             _items = new List<Item>();
-            _queuly = new List<HttpPromise>();
+            Queuly = new List<HttpPromise>();
             Init();
         }
 
-        private void Init()
+        public void Init()
         {
-            if (_isBusy) return;
-            _isBusy = true;
-            CloudDataStoreExtension.Extend(this, () =>
+            CloudDataStoreExtension.Extend(this, async () =>
             {
-                _isBusy = false;
-                foreach (var task in _queuly)
+                foreach (var task in Queuly.ToList())
                 {
-                    task.Exec();
+                    var success = await task.Exec();
+                    Queuly.Remove(task);
+                    if (!success)
+                    {
+                        break;
+                    }
                 }
             });
         }
@@ -39,12 +42,12 @@ namespace MTP
             var task = new LoginTask(this, record);
             if (Certificate == null)
             {
-                _queuly.Add(task);
+                Queuly.Add(task);
                 Init();
             }
             else
             {
-                task.Exec();
+                await task.Exec();
             }
 
             var result = await task.Task;
@@ -57,12 +60,12 @@ namespace MTP
             var task = new GetItemsTask(this);
             if (Certificate == null)
             {
-                _queuly.Add(task);
+                Queuly.Add(task);
                 Init();
             }
             else
             {
-                task.Exec();
+                await task.Exec();
             }
 
             var result = await task.Task;
@@ -76,12 +79,12 @@ namespace MTP
             var task = new GetItemTask(this, id);
             if (Certificate == null)
             {
-                _queuly.Add(task);
+                Queuly.Add(task);
                 Init();
             }
             else
             {
-                task.Exec();
+                await task.Exec();
             }
 
             var result = await task.Task;
@@ -93,12 +96,12 @@ namespace MTP
             var task = new AddItemTask(this, item);
             if (Certificate == null)
             {
-                _queuly.Add(task);
+                Queuly.Add(task);
                 Init();
             }
             else
             {
-                task.Exec();
+                await task.Exec();
             }
 
             var result = await task.Task;
@@ -110,12 +113,12 @@ namespace MTP
             var task = new UpdateItemTask(this, item);
             if (Certificate == null)
             {
-                _queuly.Add(task);
+                Queuly.Add(task);
                 Init();
             }
             else
             {
-                task.Exec();
+                await task.Exec();
             }
 
             var result = await task.Task;
@@ -127,12 +130,12 @@ namespace MTP
             var task = new DeleteItemTask(this, id);
             if (Certificate == null)
             {
-                _queuly.Add(task);
+                Queuly.Add(task);
                 Init();
             }
             else
             {
-                task.Exec();
+                await task.Exec();
             }
 
             var result = await task.Task;
@@ -142,6 +145,13 @@ namespace MTP
         public void RemoveCertificate()
         {
             CloudDataStoreExtension.Revert(this);
+        }
+
+        public bool IsValidCertificate()
+        {
+            var dateTime = DateTime.Parse(Certificate.GetExpirationDateString());
+            var now = DateTime.Now;
+            return dateTime.CompareTo(now) > 0;
         }
     }
 }

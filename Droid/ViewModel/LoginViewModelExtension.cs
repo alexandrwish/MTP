@@ -23,7 +23,6 @@ namespace MTP.ViewModel
                 var count = pref.GetInt(MainApplication.LOGIN_COUNT, 0) + 1;
                 if (count > 5)
                 {
-                    pref.Edit().PutInt(MainApplication.LOGIN_COUNT, 0).Apply();
                     callback();
                     currentActivity.Finish();
                 }

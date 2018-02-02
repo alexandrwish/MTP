@@ -2,8 +2,10 @@
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using Android.Widget;
 using Newtonsoft.Json;
 using Plugin.Connectivity;
+using Plugin.CurrentActivity;
 
 namespace MTP
 {
@@ -16,7 +18,20 @@ namespace MTP
             Store = store;
         }
 
-        public abstract void Exec();
+        public abstract Task<bool> Exec();
+
+        protected bool IsValid()
+        {
+            if (Store.IsValidCertificate()) return true;
+            CrossCurrentActivity.Current.Activity.RunOnUiThread(() =>
+            {
+                Store.RemoveCertificate();
+                Store.Init();
+                Toast.MakeText(CrossCurrentActivity.Current.Activity, "Old Certificate", ToastLength.Long).Show();
+            });
+            SetResult(null);
+            return false;
+        }
     }
 
     internal class LoginTask : HttpPromise
@@ -28,12 +43,14 @@ namespace MTP
             _record = record;
         }
 
-        public override async void Exec()
+        public override async Task<bool> Exec()
         {
+            if (!IsValid()) return false;
+
             if (!CrossConnectivity.Current.IsConnected || Store.Certificate == null)
             {
                 SetResult(null);
-                return;
+                return true;
             }
 
             var request = (HttpWebRequest) WebRequest.Create(App.BackendUrl + "api/login");
@@ -53,6 +70,8 @@ namespace MTP
                     var readToEnd = streamReader.ReadToEnd();
                     SetResult(readToEnd);
                 }
+
+                return true;
             }
         }
     }
@@ -63,12 +82,14 @@ namespace MTP
         {
         }
 
-        public override async void Exec()
+        public override async Task<bool> Exec()
         {
+            if (!IsValid()) return false;
+
             if (!CrossConnectivity.Current.IsConnected || Store.Certificate == null)
             {
                 SetResult(null);
-                return;
+                return true;
             }
 
             var request = (HttpWebRequest) WebRequest.Create(App.BackendUrl + "api/item/");
@@ -78,6 +99,8 @@ namespace MTP
             {
                 SetResult(streamReader.ReadToEnd());
             }
+
+            return true;
         }
     }
 
@@ -90,12 +113,14 @@ namespace MTP
             _id = id;
         }
 
-        public override async void Exec()
+        public override async Task<bool> Exec()
         {
+            if (!IsValid()) return false;
+
             if (!CrossConnectivity.Current.IsConnected || Store.Certificate == null || _id == null)
             {
                 SetResult(null);
-                return;
+                return true;
             }
 
             var request = (HttpWebRequest) WebRequest.Create(App.BackendUrl + "api/item/" + _id);
@@ -105,6 +130,8 @@ namespace MTP
             {
                 SetResult(streamReader.ReadToEnd());
             }
+
+            return true;
         }
     }
 
@@ -117,12 +144,14 @@ namespace MTP
             _item = item;
         }
 
-        public override async void Exec()
+        public override async Task<bool> Exec()
         {
+            if (!IsValid()) return false;
+
             if (!CrossConnectivity.Current.IsConnected || Store.Certificate == null || _item == null)
             {
                 SetResult(null);
-                return;
+                return true;
             }
 
             var request = (HttpWebRequest) WebRequest.Create(App.BackendUrl + "api/item");
@@ -141,6 +170,8 @@ namespace MTP
                 {
                     SetResult(streamReader.ReadToEnd());
                 }
+
+                return true;
             }
         }
     }
@@ -154,12 +185,14 @@ namespace MTP
             _item = item;
         }
 
-        public override async void Exec()
+        public override async Task<bool> Exec()
         {
+            if (!IsValid()) return false;
+
             if (!CrossConnectivity.Current.IsConnected || Store.Certificate == null || _item?.Id == null)
             {
                 SetResult(null);
-                return;
+                return true;
             }
 
             try
@@ -187,6 +220,8 @@ namespace MTP
                 Console.WriteLine(e);
                 SetResult(null);
             }
+
+            return true;
         }
     }
 
@@ -199,12 +234,14 @@ namespace MTP
             _id = id;
         }
 
-        public override async void Exec()
+        public override async Task<bool> Exec()
         {
+            if (!IsValid()) return false;
+
             if (!CrossConnectivity.Current.IsConnected || Store.Certificate == null || _id == null)
             {
                 SetResult(null);
-                return;
+                return true;
             }
 
             var request = (HttpWebRequest) WebRequest.Create(App.BackendUrl + "api/item/" + _id);
@@ -215,6 +252,8 @@ namespace MTP
             {
                 SetResult(streamReader.ReadToEnd());
             }
+
+            return true;
         }
     }
 }

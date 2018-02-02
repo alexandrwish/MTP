@@ -14,9 +14,9 @@ namespace MTP.Droid
     [Application]
     public class MainApplication : Application, Application.IActivityLifecycleCallbacks
     {
-        private static string CERT_NAME = "certificate.name";
         public static string USER_LOGIN = "user.login";
         public static string LOGIN_COUNT = "login.count";
+        public static string CERT_NAME = "certificate.name";
 
         public static MainApplication Current { get; set; }
 
@@ -80,14 +80,6 @@ namespace MTP.Droid
         public String getCertificateAlias()
         {
             return preference.GetString(CERT_NAME, null);
-        }
-
-        public void SaveCertificateAlias(string alias) {
-            preference.Edit().PutString(CERT_NAME, alias).Apply();    
-        }
-        
-        public void RemoveCertificateAlias() {
-            preference.Edit().PutString(CERT_NAME, null).Apply();    
         }
     }
 }
